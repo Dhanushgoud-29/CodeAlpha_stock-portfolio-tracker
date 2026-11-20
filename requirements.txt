@@ -1,0 +1,9 @@
+# Stock Portfolio Tracker - CodeAlpha Task 2
+# Designed with Python 3.10+ Standard Library (Zero external dependencies required)
+# All core features (dataclasses, typing, json, csv, unittest, http.server, argparse, logging)
+# run out-of-the-box with standard Python.
+
+# Optional development packages (for linting & formatting):
+# flake8>=6.0.0
+# black>=23.0.0
+# mypy>=1.4.0

@@ -1,0 +1,58 @@
+[
+  {
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "price": 180.0,
+    "quantity": 10.0,
+    "buy_price": 165.0,
+    "id": "stock_aapl_1a1f40a7526",
+    "created_at": "2026-11-19T13:41:28.486865+00:00",
+    "updated_at": "2026-11-19T13:41:28.486865+00:00",
+    "investment": 1800.0,
+    "cost_basis": 1650.0,
+    "unrealized_pnl": 150.0,
+    "return_percentage": 9.09
+  },
+  {
+    "symbol": "MSFT",
+    "name": "Microsoft Corp.",
+    "price": 400.0,
+    "quantity": 8.0,
+    "buy_price": 375.0,
+    "id": "stock_msft_1a1f40a7526",
+    "created_at": "2026-11-19T13:41:28.486974+00:00",
+    "updated_at": "2026-11-19T13:41:28.486974+00:00",
+    "investment": 3200.0,
+    "cost_basis": 3000.0,
+    "unrealized_pnl": 200.0,
+    "return_percentage": 6.67
+  },
+  {
+    "symbol": "TSLA",
+    "name": "Tesla Inc.",
+    "price": 250.0,
+    "quantity": 5.0,
+    "buy_price": 260.0,
+    "id": "stock_tsla_1a1f40a7526",
+    "created_at": "2026-11-19T13:41:28.486994+00:00",
+    "updated_at": "2026-11-19T13:41:28.486994+00:00",
+    "investment": 1250.0,
+    "cost_basis": 1300.0,
+    "unrealized_pnl": -50.0,
+    "return_percentage": -3.85
+  },
+  {
+    "symbol": "GOOGL",
+    "name": "Alphabet Inc.",
+    "price": 140.0,
+    "quantity": 15.0,
+    "buy_price": 130.0,
+    "id": "stock_googl_1a1f40a7527",
+    "created_at": "2026-11-19T13:41:28.487003+00:00",
+    "updated_at": "2026-11-19T13:41:28.487003+00:00",
+    "investment": 2100.0,
+    "cost_basis": 1950.0,
+    "unrealized_pnl": 150.0,
+    "return_percentage": 7.69
+  }
+]

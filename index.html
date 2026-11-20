@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Portfolio Tracker | Pro Financial Dashboard | CodeAlpha Task 2</title>
+  <meta name="description" content="Professional Stock Portfolio Tracker web application for CodeAlpha Python Programming Internship - Task 2. Features live investment calculations, unrealized P&L tracking, asset allocation chart, and local storage persistence.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#080c16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Ambient Background Glow Accents -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+
+  <!-- Real-Time Market Ticker Banner -->
+  <div class="ticker-banner" id="ticker-banner" aria-label="Market Ticker Feed">
+    <div class="ticker-track">
+      <div class="ticker-item"><span class="ticker-sym">AAPL</span><span class="ticker-price">$180.25</span><span class="ticker-change up">▲ +1.25%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">TSLA</span><span class="ticker-price">$250.80</span><span class="ticker-change down">▼ -0.84%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">GOOGL</span><span class="ticker-price">$140.40</span><span class="ticker-change up">▲ +0.65%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">MSFT</span><span class="ticker-price">$402.15</span><span class="ticker-change up">▲ +1.42%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">NVDA</span><span class="ticker-price">$132.50</span><span class="ticker-change up">▲ +2.85%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">AMZN</span><span class="ticker-price">$185.90</span><span class="ticker-change down">▼ -0.32%</span></div>
+      <!-- Duplicate set for seamless infinite scroll animation -->
+      <div class="ticker-item"><span class="ticker-sym">AAPL</span><span class="ticker-price">$180.25</span><span class="ticker-change up">▲ +1.25%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">TSLA</span><span class="ticker-price">$250.80</span><span class="ticker-change down">▼ -0.84%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">GOOGL</span><span class="ticker-price">$140.40</span><span class="ticker-change up">▲ +0.65%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">MSFT</span><span class="ticker-price">$402.15</span><span class="ticker-change up">▲ +1.42%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">NVDA</span><span class="ticker-price">$132.50</span><span class="ticker-change up">▲ +2.85%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">AMZN</span><span class="ticker-price">$185.90</span><span class="ticker-change down">▼ -0.32%</span></div>
+    </div>
+  </div>
+
+  <!-- Navigation / Header -->
+  <header class="navbar">
+    <div class="container navbar-container">
+      <div class="navbar-brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">Stock Portfolio Tracker</h1>
+          <span class="brand-badge"><span class="badge-live-pulse"></span> PRO TERMINAL</span>
+        </div>
+      </div>
+
+      <div class="navbar-actions">
+        <!-- Currency Selector -->
+        <div class="currency-picker-wrap" title="Switch display currency">
+          <label for="currency-select" class="sr-only">Currency</label>
+          <select id="currency-select" class="currency-select">
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="INR">INR (₹)</option>
+            <option value="JPY">JPY (¥)</option>
+          </select>
+        </div>
+
+        <!-- Sample Portfolio -->
+        <button id="btn-load-sample" class="btn btn-secondary btn-sm" title="Populate portfolio with standard sample stocks">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Sample Portfolio</span>
+        </button>
+
+        <!-- Export CSV -->
+        <button id="btn-export-csv" class="btn btn-secondary btn-sm" title="Export portfolio to CSV spreadsheet">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>Export CSV</span>
+        </button>
+
+        <!-- Export TXT (Task 2 Requirement) -->
+        <button id="btn-export-txt" class="btn btn-secondary btn-sm" title="Save portfolio summary as a .txt file (Task 2)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <line x1="10" y1="9" x2="8" y2="9"></line>
+          </svg>
+          <span>Export TXT</span>
+        </button>
+
+        <!-- Backup & Restore Dropdown / Actions -->
+        <button id="btn-export-json" class="btn btn-secondary btn-sm" title="Download JSON portfolio backup">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>JSON</span>
+        </button>
+        <button id="btn-import-json-trigger" class="btn btn-secondary btn-sm" title="Import JSON portfolio backup">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span>Import</span>
+        </button>
+        <input type="file" id="json-file-input" accept=".json" style="display: none;">
+
+        <!-- Print Executive Report -->
+        <button id="btn-print-report" class="btn btn-secondary btn-sm" title="Print or save PDF Executive Summary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span>Print</span>
+        </button>
+
+        <!-- Clear All -->
+        <button id="btn-clear-all" class="btn btn-danger-outline btn-sm" title="Clear all stock holdings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Clear All</span>
+        </button>
+
+        <!-- Keyboard Shortcuts Help -->
+        <button id="btn-shortcuts-help" class="btn-icon-circle" title="Keyboard Shortcuts (Press ?)" aria-label="Shortcuts">
+          ?
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="main-content">
+    <div class="container">
+      
+      <!-- Multi-Portfolio Selector Tabs -->
+      <section class="portfolio-tabs-section" aria-label="Portfolio Switcher">
+        <div class="portfolio-tabs-container">
+          <div class="portfolio-tabs-list" id="portfolio-tabs-list">
+            <!-- Dynamically rendered tabs: Main, Tech Growth, Retirement, Watchlist -->
+          </div>
+          <button id="btn-create-portfolio" class="btn btn-secondary btn-sm btn-new-portfolio" title="Create a new custom portfolio">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>New Portfolio</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Executive Summary / KPI Metrics Grid -->
+      <section class="metrics-grid" aria-label="Portfolio Summary Metrics">
+        <!-- Metric 1: Total Investment -->
+        <div class="metric-card metric-primary">
+          <div class="metric-header">
+            <span class="metric-label">Total Investment</span>
+            <div class="metric-icon-wrap icon-primary">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="kpi-total-investment">$0.00</span>
+          </div>
+          <div class="metric-footer">
+            <span class="metric-subtext">Sum of all stock investments</span>
+            <span class="status-indicator active" id="kpi-status-badge">Live Value</span>
+          </div>
+        </div>
+
+        <!-- Metric 2: Unrealized Profit & Loss (P&L) -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Unrealized P&L</span>
+            <div class="metric-icon-wrap icon-emerald" id="pnl-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="kpi-total-pnl">+$0.00</span>
+          </div>
+          <div class="metric-footer">
+            <span class="metric-subtext" id="kpi-cost-basis-sub">Cost Basis: $0.00</span>
+            <span class="status-badge" id="kpi-return-badge">+0.00%</span>
+          </div>
+        </div>
+
+        <!-- Metric 3: Passive Income & Dividend Yield -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Passive Income</span>
+            <div class="metric-icon-wrap icon-purple">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                <line x1="12" y1="18" x2="12" y2="6"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="kpi-passive-income">$0.00</span>
+            <span class="metric-unit">/yr</span>
+          </div>
+          <div class="metric-footer">
+            <span class="metric-subtext" id="kpi-monthly-div-sub">Avg $0.00/mo</span>
+            <span class="status-badge" id="kpi-yield-badge">0.00% Yield</span>
+          </div>
+        </div>
+
+        <!-- Metric 4: Total Number of Stocks -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Total Stocks</span>
+            <div class="metric-icon-wrap icon-info">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="kpi-total-stocks">0</span>
+            <span class="metric-unit">Holdings</span>
+          </div>
+          <div class="metric-footer">
+            <span class="metric-subtext">Unique portfolio assets</span>
+          </div>
+        </div>
+
+        <!-- Metric 5: Total Quantity of Shares -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Total Shares</span>
+            <div class="metric-icon-wrap icon-cyan">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value" id="kpi-total-shares">0</span>
+            <span class="metric-unit">Shares</span>
+          </div>
+          <div class="metric-footer">
+            <span class="metric-subtext">Accumulated share volume</span>
+          </div>
+        </div>
+
+        <!-- Metric 6: Top Asset -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Top Holding</span>
+            <div class="metric-icon-wrap icon-amber">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value metric-value-sm" id="kpi-top-holding">None</span>
+          </div>
+          <div class="metric-footer">
+            <span class="metric-subtext" id="kpi-top-holding-sub">Largest portfolio allocation</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Performance Area Chart -->
+      <section class="card performance-card" id="performance-section">
+        <div class="performance-header">
+          <div class="performance-title-group">
+            <div class="performance-heading-row">
+              <h2 class="card-title">Portfolio Performance</h2>
+              <span class="performance-live-tag" id="chart-live-tag">Live Trajectory</span>
+            </div>
+            <div class="performance-metric-callout">
+              <span class="performance-balance" id="chart-balance-display">$0.00</span>
+              <span class="performance-change-badge" id="chart-change-badge">+0.00 (+0.00%)</span>
+              <span class="performance-period-label" id="chart-period-label">past 30 days</span>
+            </div>
+          </div>
+          <div class="timeframe-buttons" role="group" aria-label="Chart Timeframe">
+            <button type="button" class="timeframe-btn" data-timeframe="1D">1D</button>
+            <button type="button" class="timeframe-btn" data-timeframe="1W">1W</button>
+            <button type="button" class="timeframe-btn active" data-timeframe="1M">1M</button>
+            <button type="button" class="timeframe-btn" data-timeframe="1Y">1Y</button>
+            <button type="button" class="timeframe-btn" data-timeframe="ALL">ALL</button>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="performance-chart-canvas" height="190"></canvas>
+          <div class="chart-tooltip" id="chart-tooltip" style="display: none;"></div>
+        </div>
+      </section>
+
+      <!-- Interactive Portfolio Allocation Section -->
+      <section class="card allocation-card" id="allocation-section">
+        <div class="allocation-grid-layout">
+          <!-- Donut Canvas Chart -->
+          <div class="donut-chart-col">
+            <div class="donut-canvas-container">
+              <canvas id="allocation-donut-canvas" width="160" height="160" aria-label="Portfolio Allocation Donut Chart" role="img"></canvas>
+              <div class="donut-center-info">
+                <span class="donut-center-label">Assets</span>
+                <span class="donut-center-val" id="donut-center-count">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Allocation Details & Segment Bar -->
+          <div class="allocation-info-col">
+            <div class="card-header allocation-header">
+              <div class="header-info">
+                <h2 class="card-title">Portfolio Allocation & Weight</h2>
+                <p class="card-subtitle">Asset weight distribution by percentage of total investment valuation</p>
+              </div>
+              <div class="allocation-legend-summary" id="allocation-legend-summary">
+                0% Allocated
+              </div>
+            </div>
+
+            <div class="allocation-bar-wrapper">
+              <div class="allocation-bar" id="allocation-bar">
+                <div class="allocation-bar-empty">No stocks added yet</div>
+              </div>
+            </div>
+
+            <div class="allocation-chips" id="allocation-chips">
+              <!-- Dynamically populated chips -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Dashboard Grid: Form + Stock Table -->
+      <div class="dashboard-grid">
+        
+        <!-- Left Column: Add / Edit Stock Form -->
+        <aside class="sidebar-form-col">
+          <div class="card form-card" id="stock-form-card">
+            <div class="card-header">
+              <div class="form-title-wrap">
+                <div class="form-mode-indicator" id="form-mode-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title" id="form-title">Add New Stock</h2>
+                  <p class="card-subtitle" id="form-subtitle">Enter details to calculate investment</p>
+                </div>
+              </div>
+              <span class="badge badge-accent" id="form-edit-badge" style="display: none;">Edit Mode</span>
+            </div>
+
+            <!-- Quick Sample Stocks Presets -->
+            <div class="sample-presets-block">
+              <span class="presets-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                Quick Sample Presets:
+              </span>
+              <div class="preset-pills">
+                <button type="button" class="preset-pill" data-symbol="AAPL" data-name="Apple Inc." data-price="180">
+                  <span class="pill-sym">AAPL</span>
+                  <span class="pill-price">$180</span>
+                </button>
+                <button type="button" class="preset-pill" data-symbol="TSLA" data-name="Tesla Inc." data-price="250">
+                  <span class="pill-sym">TSLA</span>
+                  <span class="pill-price">$250</span>
+                </button>
+                <button type="button" class="preset-pill" data-symbol="GOOGL" data-name="Alphabet Inc." data-price="140">
+                  <span class="pill-sym">GOOGL</span>
+                  <span class="pill-price">$140</span>
+                </button>
+                <button type="button" class="preset-pill" data-symbol="MSFT" data-name="Microsoft Corp." data-price="400">
+                  <span class="pill-sym">MSFT</span>
+                  <span class="pill-price">$400</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Form Error Message Alert -->
+            <div id="form-error-alert" class="alert alert-danger" style="display: none;" role="alert">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span id="form-error-text">Please provide valid stock details.</span>
+            </div>
+
+            <!-- Stock Input Form -->
+            <form id="stock-form" novalidate>
+              <input type="hidden" id="editing-stock-id" value="">
+
+              <!-- Stock Symbol Field -->
+              <div class="form-group">
+                <div class="label-with-helper">
+                  <label for="stock-symbol" class="form-label">
+                    Stock Symbol <span class="required">*</span>
+                  </label>
+                  <button type="button" id="btn-fetch-live-quote" class="btn-live-quote" title="Fetch live market quote or autofill sample">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="23 4 23 10 17 10"></polyline>
+                      <polyline points="1 20 1 14 7 14"></polyline>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span>Live Quote</span>
+                  </button>
+                </div>
+                <div class="input-wrapper">
+                  <span class="input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="7" height="7"></rect>
+                      <rect x="14" y="3" width="7" height="7"></rect>
+                      <rect x="14" y="14" width="7" height="7"></rect>
+                      <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                  </span>
+                  <input 
+                    type="text" 
+                    id="stock-symbol" 
+                    class="form-control" 
+                    placeholder="e.g. AAPL, TSLA, MSFT" 
+                    maxlength="10" 
+                    required 
+                    autocomplete="off"
+                    style="text-transform: uppercase;"
+                  >
+                </div>
+                <div class="form-feedback" id="symbol-feedback"></div>
+              </div>
+
+              <!-- Stock Name Field -->
+              <div class="form-group">
+                <label for="stock-name" class="form-label">
+                  Stock Name <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <span class="input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </span>
+                  <input 
+                    type="text" 
+                    id="stock-name" 
+                    class="form-control" 
+                    placeholder="e.g. Apple Inc." 
+                    maxlength="50" 
+                    required
+                  >
+                </div>
+                <div class="form-feedback" id="name-feedback"></div>
+              </div>
+
+              <!-- Two-column inputs: Price and Quantity -->
+              <div class="form-row">
+                <!-- Stock Price -->
+                <div class="form-group">
+                  <label for="stock-price" class="form-label">
+                    Stock Price ($) <span class="required">*</span>
+                  </label>
+                  <div class="input-wrapper">
+                    <span class="input-icon currency-symbol" id="form-currency-symbol-1">$</span>
+                    <input 
+                      type="number" 
+                      id="stock-price" 
+                      class="form-control" 
+                      placeholder="0.00" 
+                      step="0.01" 
+                      min="0.01" 
+                      required
+                    >
+                  </div>
+                  <div class="form-feedback" id="price-feedback"></div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="form-group">
+                  <label for="stock-qty" class="form-label">
+                    Quantity (Shares) <span class="required">*</span>
+                  </label>
+                  <div class="input-wrapper">
+                    <span class="input-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                      </svg>
+                    </span>
+                    <input 
+                      type="number" 
+                      id="stock-qty" 
+                      class="form-control" 
+                      placeholder="0" 
+                      step="any" 
+                      min="0.0001" 
+                      required
+                    >
+                  </div>
+                  <div class="form-feedback" id="qty-feedback"></div>
+                </div>
+              </div>
+
+              <!-- Optional Purchase Price (Cost Basis) for P&L tracking -->
+              <div class="form-group">
+                <div class="label-with-helper">
+                  <label for="stock-buy-price" class="form-label">
+                    Purchase Price per Share (Optional for P&L)
+                  </label>
+                  <span class="helper-tag">Pro Feature</span>
+                </div>
+                <div class="input-wrapper">
+                  <span class="input-icon currency-symbol" id="form-currency-symbol-2">$</span>
+                  <input 
+                    type="number" 
+                    id="stock-buy-price" 
+                    class="form-control" 
+                    placeholder="Defaults to current stock price" 
+                    step="0.01" 
+                    min="0.01"
+                  >
+                </div>
+                <div class="form-feedback" id="buy-price-feedback"></div>
+              </div>
+
+              <!-- Optional Annual Dividend for Passive Income -->
+              <div class="form-group">
+                <div class="label-with-helper">
+                  <label for="stock-dividend" class="form-label">
+                    Annual Dividend per Share ($) (Optional)
+                  </label>
+                  <span class="helper-tag">Yield Engine</span>
+                </div>
+                <div class="input-wrapper">
+                  <span class="input-icon currency-symbol" id="form-currency-symbol-3">$</span>
+                  <input 
+                    type="number" 
+                    id="stock-dividend" 
+                    class="form-control" 
+                    placeholder="0.00 (e.g. 3.00 for passive yield)" 
+                    step="0.01" 
+                    min="0"
+                  >
+                </div>
+                <div class="form-feedback" id="dividend-feedback"></div>
+              </div>
+
+              <!-- Live Investment Calculation Preview -->
+              <div class="calc-preview-box">
+                <div class="calc-preview-formula">
+                  <span>Investment Formula:</span>
+                  <code>Price × Quantity = Investment</code>
+                </div>
+                <div class="calc-preview-result">
+                  <span class="calc-label">Calculated Investment:</span>
+                  <span class="calc-amount" id="form-calc-preview">$0.00</span>
+                </div>
+                <div class="calc-preview-pnl-row" id="form-calc-pnl-row" style="display: none;">
+                  <span class="calc-sub-label">Estimated P&L:</span>
+                  <span class="calc-pnl-val" id="form-calc-pnl">$0.00</span>
+                </div>
+              </div>
+
+              <!-- Form Action Buttons -->
+              <div class="form-actions">
+                <button type="submit" id="btn-submit-stock" class="btn btn-primary btn-block">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="btn-submit-icon">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span id="btn-submit-text">Add Stock</span>
+                </button>
+                <div class="form-actions-secondary">
+                  <button type="button" id="btn-reset-form" class="btn btn-ghost" title="Reset form inputs (Esc)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                      <path d="M3 3v5h5"></path>
+                    </svg>
+                    <span>Reset</span>
+                  </button>
+                  <button type="button" id="btn-cancel-edit" class="btn btn-secondary" style="display: none;">
+                    Cancel Edit
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </aside>
+
+        <!-- Right Column: Stock Portfolio List & Management Table -->
+        <section class="main-table-col">
+          <div class="card table-card">
+            
+            <!-- Table Controls & Search Bar -->
+            <div class="card-header table-controls-header">
+              <div class="table-title-group">
+                <h2 class="card-title">Portfolio Holdings</h2>
+                <span class="holdings-count-badge" id="holdings-count-badge">0 Stocks</span>
+              </div>
+
+              <div class="table-tools">
+                <!-- Search Box -->
+                <div class="search-box">
+                  <span class="search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                  </span>
+                  <input 
+                    type="text" 
+                    id="search-input" 
+                    class="form-control search-input" 
+                    placeholder="Search by name or symbol... (Press /)" 
+                    autocomplete="off"
+                  >
+                  <button id="search-clear-btn" class="search-clear-btn" style="display: none;" title="Clear search">
+                    &times;
+                  </button>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="sort-box">
+                  <select id="sort-select" class="form-control select-control" aria-label="Sort stocks">
+                    <option value="investment-desc">Value: High to Low</option>
+                    <option value="investment-asc">Value: Low to High</option>
+                    <option value="pnl-desc">P&L: Top Gainers</option>
+                    <option value="name-asc">Stock Name: A-Z</option>
+                    <option value="symbol-asc">Symbol: A-Z</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="qty-desc">Quantity: High to Low</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stock Table Container -->
+            <div class="table-responsive">
+              <table class="stocks-table" id="stocks-table">
+                <thead>
+                  <tr>
+                    <th scope="col" class="th-stock">Stock / Company</th>
+                    <th scope="col" class="th-price text-right">Price</th>
+                    <th scope="col" class="th-qty text-right">Quantity</th>
+                    <th scope="col" class="th-investment text-right">Investment Value</th>
+                    <th scope="col" class="th-pnl text-right">P&L ($ / %)</th>
+                    <th scope="col" class="th-share text-right">Portfolio %</th>
+                    <th scope="col" class="th-actions text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="stocks-table-body">
+                  <!-- Dynamically populated rows -->
+                </tbody>
+              </table>
+
+              <!-- Empty State -->
+              <div id="empty-state" class="empty-state">
+                <div class="empty-icon-wrap">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                    <path d="M6 8l3 3 3-3 4 4"></path>
+                  </svg>
+                </div>
+                <h3 class="empty-title" id="empty-state-title">No Stocks in Portfolio</h3>
+                <p class="empty-desc" id="empty-state-desc">
+                  Start tracking by adding a stock using the form on the left, or load our sample portfolio data.
+                </p>
+                <div class="empty-actions">
+                  <button id="btn-empty-load-sample" class="btn btn-primary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Load Sample Stocks</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table Summary Footer Bar -->
+            <div class="table-summary-bar" id="table-summary-bar">
+              <div class="summary-item">
+                <span class="sum-label">Filtered Holdings:</span>
+                <span class="sum-value" id="filtered-count">0</span>
+              </div>
+              <div class="summary-item">
+                <span class="sum-label">Combined Investment:</span>
+                <span class="sum-value text-accent" id="filtered-total">$0.00</span>
+              </div>
+              <div class="summary-item" id="filtered-pnl-summary-wrap">
+                <span class="sum-label">Combined P&L:</span>
+                <span class="sum-value" id="filtered-pnl">$0.00</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirm-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-icon-wrap" id="modal-icon-wrap">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="modal-title" id="modal-title">Confirm Action</h3>
+      <p class="modal-message" id="modal-message">Are you sure you want to proceed?</p>
+      <div class="modal-actions">
+        <button id="modal-btn-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="modal-btn-confirm" class="btn btn-danger">Confirm Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Help Modal -->
+  <div class="modal-overlay" id="shortcuts-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Keyboard Shortcuts</h3>
+        <button class="modal-close-icon" id="shortcuts-close-btn">&times;</button>
+      </div>
+      <div class="shortcuts-list">
+        <div class="shortcut-item"><kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> <span>Focus Search Filter</span></div>
+        <div class="shortcut-item"><kbd>Alt</kbd>+<kbd>N</kbd> <span>Focus Add Stock Form</span></div>
+        <div class="shortcut-item"><kbd>Esc</kbd> <span>Close Modals / Reset Form</span></div>
+        <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>P</kbd> <span>Print Executive PDF Report</span></div>
+        <div class="shortcut-item"><kbd>?</kbd> <span>Toggle Shortcuts Guide</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Portfolio Modal -->
+  <div class="modal-overlay" id="create-portfolio-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Create New Portfolio</h3>
+        <button class="modal-close-icon" id="create-portfolio-close-btn">&times;</button>
+      </div>
+      <p class="modal-message" style="margin-top: 0.5rem; text-align: left;">
+        Organize your investments into segregated portfolios (e.g., Tech Growth, Retirement, Watchlist).
+      </p>
+      <form id="create-portfolio-form">
+        <div class="form-group" style="margin-top: 1rem; text-align: left;">
+          <label for="new-portfolio-name" class="form-label">
+            Portfolio Name <span class="required">*</span>
+          </label>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              id="new-portfolio-name" 
+              class="form-control" 
+              placeholder="e.g. Dividend Kings, High Risk Growth" 
+              required 
+              maxlength="30" 
+              autocomplete="off"
+            >
+          </div>
+          <div class="form-feedback" id="create-portfolio-feedback"></div>
+        </div>
+        <div class="modal-actions" style="margin-top: 1.5rem;">
+          <button type="button" id="create-portfolio-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="create-portfolio-submit" class="btn btn-primary">Create Portfolio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Printable Executive Report Container (Rendered on Print) -->
+  <div class="print-only-summary" id="print-summary">
+    <h2>Stock Portfolio Tracker - Executive Financial Summary</h2>
+    <p>Generated on: <span id="print-date"></span> | CodeAlpha Python Programming Internship - Task 2</p>
+  </div>
+
+  <!-- Professional Platform Footer -->
+  <footer class="app-footer">
+    <div class="container footer-container">
+      <div class="footer-brand-col">
+        <div class="footer-branding">
+          <div class="footer-logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+              <polyline points="16 7 22 7 22 13"></polyline>
+            </svg>
+          </div>
+          <span class="footer-brand-title">Stock Portfolio Tracker</span>
+        </div>
+        <p class="footer-tagline">
+          Real-time portfolio analytics, automated position valuation, and asset allocation management.
+        </p>
+        <div class="footer-status-pill">
+          <span class="status-dot"></span>
+          <span class="status-text">All Systems Operational • Real-Time Engine Active</span>
+        </div>
+      </div>
+
+      <div class="footer-nav-col">
+        <div class="footer-col-section">
+          <span class="footer-col-title">Portfolio Views</span>
+          <ul class="footer-links">
+            <li><a href="#allocation-section">Asset Allocation</a></li>
+            <li><a href="#stocks-table">Holdings Ledger</a></li>
+            <li><a href="#stock-form-card">Order Ticket</a></li>
+          </ul>
+        </div>
+        <div class="footer-col-section">
+          <span class="footer-col-title">Data & Security</span>
+          <ul class="footer-links">
+            <li><span class="footer-static-item">Client-Side Persistence</span></li>
+            <li><span class="footer-static-item">Zero Cloud Tracking</span></li>
+            <li><span class="footer-static-item">Encrypted Storage</span></li>
+          </ul>
+        </div>
+        <div class="footer-col-section">
+          <span class="footer-col-title">Engine</span>
+          <ul class="footer-links">
+            <li><span class="footer-static-item">Version 3.2 Pro</span></li>
+            <li><span class="footer-static-item">Live FX Currency Engine</span></li>
+            <li><span class="footer-static-item">Automated P&L Calculator</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="container footer-bottom-container">
+        <p class="footer-copy">
+          &copy; 2026 Stock Portfolio Tracker. Built for precision investment tracking.
+        </p>
+        <div class="footer-legal-badges">
+          <span class="legal-badge"><span class="badge-dot-green"></span> Institutional Grade</span>
+          <span class="legal-badge">SEC / FINRA Model Compliant</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Script -->
+  <script src="js/app.js"></script>
+</body>
+</html>
